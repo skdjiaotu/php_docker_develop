@@ -1,0 +1,70 @@
+server {
+    listen  80;
+
+    server_name  gys.dev.com;
+    root   /var/www/gys/dist;
+    index  index.php index.html index.htm;
+
+    #access_log  /var/log/nginx/log/host.access.log  main;
+
+    location / {
+        try_files $uri $uri/ /index.php$is_args$query_string;
+    }
+    # 反向代理
+    location ^~ /prod-api/ {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Nginx-Proxy true;
+        proxy_pass http://gys-api.dev.com/api/;
+    }
+
+    error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    location ~ \.php$ {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        #fastcgi_pass unix:/var/run/php-fpm.sock;
+        fastcgi_pass php:9000;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index index.php;
+        include fastcgi_params;
+    }
+
+    location ~ .*\.(gif|jpg|jpeg|png|bmp|swf)$
+    {
+        expires      30d;
+    }
+
+    location ~ .*\.(js|css)?$
+    {
+        expires      2h;
+    }
+
+    location ~ /.well-known {
+        allow all;
+    }
+
+    location ~ /\.
+    {
+        deny all;
+    }
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    location ~ /\.ht {
+        deny  all;
+    }
+
+    error_log /var/log/nginx/gys_error.log;
+    access_log /var/log/nginx/gys_access.log;
+}

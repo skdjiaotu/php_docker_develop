@@ -1,0 +1,49 @@
+server {
+    listen 80;
+
+    server_name work.dev.com;
+    root /var/www/mps/htm;
+    index index.php index.html index.htm index.nginx-debian.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location ~ \.php$ {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        #fastcgi_pass unix:/var/run/php-fpm.sock;
+        fastcgi_pass php:9000;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index index.php;
+        include fastcgi_params;
+    }
+
+    error_log /var/log/nginx/work_error.log;
+    access_log /var/log/nginx/work_access.log;
+}
+
+server {
+    listen 80;
+
+    server_name mps.dev.com;
+    root /var/www/mps/htm;
+    index index.php index.html index.htm index.nginx-debian.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location ~ \.php$ {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        #fastcgi_pass unix:/var/run/php-fpm.sock;
+        fastcgi_pass php:9000;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_index index.php;
+        include fastcgi_params;
+    }
+
+    error_log /var/log/nginx/mps_error.log;
+    access_log /var/log/nginx/mps_access.log;
+}
